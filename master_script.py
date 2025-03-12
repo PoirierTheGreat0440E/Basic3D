@@ -25,14 +25,24 @@ class MasterFrame( tkinter.Frame ):
             self.visualiser.cursor_element.translate(0.0,0.0,-0.1)
         if ( event.char == ' ' ):
             self.VS1.add_vertex( self.visualiser.cursor_element.pos_x , self.visualiser.cursor_element.pos_y , self.visualiser.cursor_element.pos_z )
-            self.visualiser.update_display_data( self.VS1.vertex_array , self.VS1.color_array )
+            self.visualiser.update_display_data( self.VS1.vertex_array , self.VS1.color_array , self.VS1.texcoord_array )
 
     def communiquer_triangle(self,triangle_donne):
-        print("MASTER FRAME : j'ai un triangle WTF le voici" + str(triangle_donne) )
+        #print("MASTER FRAME : j'ai un triangle WTF le voici" + str(triangle_donne) )
+        self.VS1.assigner_texcoords( triangle_donne )
+
+    def communiquer_image(self,image_array):
+        #print("MASTER FRAME , communiquer_image :" + str(image_array) )
+        self.visualiser.update_texture_data( image_array )
+
+    def process_configure(self,event):
+        ETERNAL_WIDTH = event.width
+        ETERNAL_HEIGHT = event.height
+        #print(event)
 
     def __init__(self,parent):
         
-        super().__init__(parent,width=ETERNAL_WIDTH,height=ETERNAL_HEIGHT,bg="#1C1C1C")
+        super().__init__(parent,width=int(ETERNAL_WIDTH/4),height=ETERNAL_HEIGHT,bg="#1C1C1C")
         self.VS1 = VertexStorage(self)
         self.VS1.pack( side=tkinter.LEFT )
 
@@ -43,7 +53,7 @@ class MasterFrame( tkinter.Frame ):
         self.visualiser.bind('<MouseWheel>',self.visualiser.process_mousewheel)
         self.visualiser.bind('<Double-Button-1>',self.visualiser.process_double_click)
 
-        self.gestionneur_texture = gestionneur_texture(self)
+        self.gestionneur_texture = gestionneur_texture(self,width=int(ETERNAL_WIDTH/4),height=ETERNAL_HEIGHT)
         self.gestionneur_texture.pack(side=tkinter.RIGHT,fill=tkinter.BOTH,expand=True)
 
 
@@ -53,11 +63,13 @@ if __name__ == '__main__':
     root = tkinter.Tk()
     root.geometry( str(ETERNAL_WIDTH)+"x"+str(ETERNAL_HEIGHT)+"+10+10")
     root.title("3D Basics v0.1")
-    root.resizable(False,False)
+    root.resizable(True,True)
+    
 
     MF = MasterFrame(root)
     MF.pack( fill=tkinter.BOTH , expand=True )
 
     root.bind('<KeyPress>',MF.process_key_press)
+    root.bind('<Configure>',MF.process_configure)
 
     root.mainloop()

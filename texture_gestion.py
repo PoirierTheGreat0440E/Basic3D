@@ -33,6 +33,7 @@ class gestionneur_texture( tkinter.Frame ):
             self.titre.configure(image=image_tk_1)
             self.titre.image = image_tk_1
             self.titre.bind( '<Double-Button-1>' , self.ouvrir_canvas )
+            self.master.communiquer_image( numpy.asarray(image) )
         except FileNotFoundError as FNFE:
             print("Le fichier n'a pas été trouvé :(")
         except ValueError as VE:

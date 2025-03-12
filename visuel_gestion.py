@@ -91,11 +91,26 @@ class Visualiser(OpenGLFrame):
         self.anterior_mouse_position = [ 0.0 , 0.0 ]
         self.vertex_list = []
         self.triangle_color_list = []
-
-    def update_display_data(self,vertex_list,color_list):
+        self.texcoord_list = []
+        self.texture = [] 
+        self.image_en_array = None
+        
+    def update_display_data(self,vertex_list,color_list,texcoord_list):
         self.vertex_list = vertex_list
         self.triangle_color_list = color_list
+        self.texcoord_list = texcoord_list
         #self.triangle_color_list = color_list
+        
+    def update_texture_data( self ,  image_en_array ):
+        #print("VISUALISER, update_texture_data : " + str(image_en_array) )
+        self.image_en_array = image_en_array
+        longueur = len(self.image_en_array)
+        largeur = len(self.image_en_array[0])
+        self.texture = GL.glGenTextures(1)
+        GL.glBindTexture( GL.GL_TEXTURE_2D , self.texture )
+        GL.glTexParameteri( GL.GL_TEXTURE_2D , GL.GL_TEXTURE_MAG_FILTER , GL.GL_NEAREST )
+        GL.glTexParameteri( GL.GL_TEXTURE_2D , GL.GL_TEXTURE_MIN_FILTER , GL.GL_NEAREST )
+        GL.glTexImage2D( GL.GL_TEXTURE_2D , 0 , 3 , longueur , largeur , 0 , GL.GL_RGB , GL.GL_UNSIGNED_BYTE , self.image_en_array )
 
     def process_double_click(self,event):
         self.camera_element.vertical_angle = 0.0
@@ -131,20 +146,28 @@ class Visualiser(OpenGLFrame):
         GL.glViewport(0, 0, self.width, self.height)
         GL.glClearColor(0.0, 0.0, 0.0, 0.0)
         GL.glPointSize(6)
-
         GL.glClearDepthf(1.0)
         GL.glEnable(GL.GL_DEPTH_TEST)
         GL.glDepthFunc(GL.GL_LESS)
 
     def show_vertex_list(self):
 
+        if self.image_en_array is not None:
+            #print(self.image_en_array.dtype)
+            GL.glEnable( GL.GL_TEXTURE_2D )
+            GL.glBindTexture( GL.GL_TEXTURE_2D , self.texture )
+            pass
+
         GL.glBegin(GL.GL_TRIANGLES)
         i = 0
         while i < len(self.vertex_list):
+            if self.texcoord_list[i] != "NO TEXTURE":
+                GL.glTexCoord2f( self.texcoord_list[i][0]/128 , self.texcoord_list[i][1]/128 )
             GL.glColor3f( self.triangle_color_list[i][0] , self.triangle_color_list[i][1] , self.triangle_color_list[i][2]  )
             GL.glVertex3f( self.vertex_list[i][0] , self.vertex_list[i][1] , self.vertex_list[i][2] )
             i += 1
         GL.glEnd()
+        GL.glBindTexture( GL.GL_TEXTURE_2D , 0 )
         
         GL.glLineWidth(2)
         
